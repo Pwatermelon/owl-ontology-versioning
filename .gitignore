@@ -1,0 +1,10 @@
+/bin/
+/dist/
+*.exe
+.DS_Store
+.idea/
+.vscode/
+*.owl
+*.ttl
+*.rdf
+report.json

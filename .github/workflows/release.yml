@@ -1,0 +1,88 @@
+name: Release CLI binaries
+
+# Пуш тега v1.2.3 → сборка Linux/Windows → GitHub Release с артефактами.
+# asana-services при сборке качает linux-amd64 из этого Release.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Версия без v (например 0.3.0). Пусто = из тега / дата."
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            V="${{ github.event.inputs.version }}"
+            V="${V#v}"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            V="${GITHUB_REF#refs/tags/v}"
+          else
+            V="0.0.0-dev.$(date -u +%Y%m%d%H%M)"
+          fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "tag=v$V" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.x"
+
+      - name: Build binaries (Linux / Windows / macOS)
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          mkdir -p dist
+          LDFLAGS="-s -w -X main.VERSION=${VERSION}"
+
+          CGO_ENABLED=0 GOOS=linux   GOARCH=amd64 go build -ldflags="$LDFLAGS" \
+            -o dist/owl-versioning-linux-amd64 ./cmd/owl-versioning
+          CGO_ENABLED=0 GOOS=linux   GOARCH=arm64 go build -ldflags="$LDFLAGS" \
+            -o dist/owl-versioning-linux-arm64 ./cmd/owl-versioning
+
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS" \
+            -o dist/owl-versioning-windows-amd64.exe ./cmd/owl-versioning
+          CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -ldflags="$LDFLAGS" \
+            -o dist/owl-versioning-windows-arm64.exe ./cmd/owl-versioning
+
+          # macOS Intel + Apple Silicon
+          CGO_ENABLED=0 GOOS=darwin  GOARCH=amd64 go build -ldflags="$LDFLAGS" \
+            -o dist/owl-versioning-darwin-amd64 ./cmd/owl-versioning
+          CGO_ENABLED=0 GOOS=darwin  GOARCH=arm64 go build -ldflags="$LDFLAGS" \
+            -o dist/owl-versioning-darwin-arm64 ./cmd/owl-versioning
+
+          chmod +x dist/owl-versioning-linux-* dist/owl-versioning-darwin-*
+
+      - name: Checksums
+        working-directory: dist
+        run: |
+          sha256sum owl-versioning-* > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: owl-versioning ${{ steps.ver.outputs.tag }}
+          generate_release_notes: true
+          files: |
+            dist/owl-versioning-linux-amd64
+            dist/owl-versioning-linux-arm64
+            dist/owl-versioning-windows-amd64.exe
+            dist/owl-versioning-windows-arm64.exe
+            dist/owl-versioning-darwin-amd64
+            dist/owl-versioning-darwin-arm64
+            dist/SHA256SUMS.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
