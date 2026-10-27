@@ -128,8 +128,8 @@ func CompareBytes(baseRaw, incRaw []byte, baseName, incName string) (*Report, er
 		LabelConflicts: capConflicts(conflicts, 100),
 		Notes: []string{
 			"Сравнение по IRI сущностей с rdf:type (упрощённый ABox/TBox diff).",
-			"Ядро — CLI owl-versioning (отдельный репозиторий); HTTP в каталоге — тонкая обёртка.",
-			"Preview only: файлы не изменяются.",
+			"CLI owl-versioning: structural preview/diff двух OWL-снимков.",
+			"Preview only: входные файлы не изменяются.",
 		},
 	}, nil
 }

@@ -38,7 +38,7 @@ var (
 
 func RenderReport(r *compare.Report, limit int) {
 	out := os.Stdout
-	fmt.Fprintln(out, titleStyle.Render(" asana-ontology-merge · preview "))
+	fmt.Fprintln(out, titleStyle.Render(" owl-versioning · preview "))
 	fmt.Fprintf(out, "%s  %s  %s\n\n",
 		subtitleStyle.Render(r.Base.Filename),
 		subtitleStyle.Render("↔"),
