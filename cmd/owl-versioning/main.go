@@ -17,14 +17,13 @@ func main() {
 	root := &cobra.Command{
 		Use:   "owl-versioning",
 		Short: "CLI версионирования OWL-онтологий: preview / diff двух снимков",
-		Long: `Средство сравнения версий OWL (НИР: методы версионирования онтологий).
+		Long: `CLI для версионирования OWL-онтологий: preview / diff двух снимков.
 
-Локально:
+Примеры:
   owl-versioning preview base.owl incoming.owl
   owl-versioning preview base.owl incoming.owl --json-stdout
 
-Релизы (Linux / Windows / macOS) публикуются в GitHub Releases.
-Каталог асан при сборке API скачивает linux-amd64 из нужного Release.`,
+Бинарники Linux / Windows / macOS публикуются в GitHub Releases.`,
 	}
 
 	var (

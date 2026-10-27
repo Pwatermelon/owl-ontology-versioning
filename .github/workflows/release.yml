@@ -1,7 +1,6 @@
 name: Release CLI binaries
 
-# Пуш тега v1.2.3 → сборка Linux/Windows → GitHub Release с артефактами.
-# asana-services при сборке качает linux-amd64 из этого Release.
+# Пуш тега vX.Y.Z → сборка Linux/Windows/macOS → GitHub Release с бинарниками.
 
 on:
   push:
